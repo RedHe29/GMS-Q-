@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="六件装备、十八个能力点数的本地配装计算器。录入库存，找出最接近目标点数的装备组合。">
+  <title>六装 · 技能配装器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-hat" viewBox="0 0 24 24">
+      <path d="M8 4h8v7H8z"/>
+      <path d="M5 15.4C5 12.7 8.1 11 12 11s7 1.7 7 4.4"/>
+      <path d="M4 15.4h16v2.5c0 .6-.5 1.1-1.1 1.1H5.1c-.6 0-1.1-.5-1.1-1.1z"/>
+      <path d="M4 15.4c2.1.9 4.9 1.4 8 1.4s5.9-.5 8-1.4"/>
+    </symbol>
+    <symbol id="i-top" viewBox="0 0 24 24">
+      <path d="m9 4 3 2 3-2 5 3-2 4-2-1v10H8V10L6 11 4 7z"/>
+      <path d="M9 4c.6 1.7 1.6 2.6 3 2.6S14.4 5.7 15 4"/>
+    </symbol>
+    <symbol id="i-bottom" viewBox="0 0 24 24">
+      <path d="M7 4h10v5l-2 11h-3l-1-8-1 8H6L4 9V4z"/>
+      <path d="M4 8.5h16"/>
+    </symbol>
+    <symbol id="i-cape" viewBox="0 0 24 24">
+      <path d="M9 4h6v3c3.2 1.7 4.5 5.4 4 12l-4.5-4-2.5 4-2.5-4L5 19C4.5 12.4 5.8 8.7 9 7z"/>
+      <path d="M9 4c.5 1.2 1.5 1.8 3 1.8S14.5 5.2 15 4"/>
+    </symbol>
+    <symbol id="i-gloves" viewBox="0 0 24 24">
+      <path d="M7.5 13V7.2a1.7 1.7 0 0 1 3.4 0V11m0-5a1.7 1.7 0 0 1 3.4 0v5m0-3.3a1.7 1.7 0 0 1 3.4 0V15a5.5 5.5 0 0 1-5.5 5.5h-.8c-1.3 0-2.5-.6-3.3-1.7L4.4 14.9a1.8 1.8 0 0 1 2.7-2.3l.9.9z"/>
+      <path d="M7 18.5h7"/>
+    </symbol>
+    <symbol id="i-shoes" viewBox="0 0 24 24">
+      <path d="M4 16.5h7.2l3.3 2.4H20v2.2H4z"/>
+      <path d="M8.2 16.5V6.8h4v6.5l4.5 2"/>
+      <path d="M4 19.1h16"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="m13.5 5.5 3 3"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/><path d="M10 11v5M14 11v5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4m0 0L8 8m4-4 4 4"/><path d="M5 19h14"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5H5v11h3"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m0 0-5-5m5 5-5 5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></symbol>
+  </svg>
+
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span>六</span></div>
+        <div class="brand-copy">
+          <p class="eyebrow">MAPLE LOADOUT LAB</p>
+          <h1>六装 · 技能配装器</h1>
+          <p class="site-subtitle">六件装备 × 三条能力。设定想要的点数，从库存里找出最接近的一套。</p>
+        </div>
+      </div>
+      <div class="header-actions" aria-label="数据操作">
+        <button class="btn btn-ghost" id="sampleBtn" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg>
+          <span>载入示例</span>
+        </button>
+        <button class="btn btn-ghost" id="importBtn" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-upload"></use></svg>
+          <span>导入</span>
+        </button>
+        <button class="btn btn-ghost" id="exportBtn" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+          <span>导出</span>
+        </button>
+        <button class="btn btn-ghost btn-danger" id="clearBtn" type="button">清空</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="workspace">
+        <aside class="panel target-panel" aria-labelledby="targetHeading">
+          <div class="panel-topline">
+            <span class="section-kicker">目标配置</span>
+            <div class="target-total" aria-live="polite">
+              <strong id="targetUsed">0</strong><span>/ 18</span>
+            </div>
+          </div>
+          <h2 id="targetHeading">想要哪些能力？</h2>
+          <p class="panel-description">按能力汇总点数。每项最多 3 点，总和不超过 18 点。</p>
+
+          <div class="target-scale" id="targetScale" aria-hidden="true"></div>
+          <div class="scale-meta">
+            <span id="targetState">等待设定</span>
+            <span id="targetRemain">还剩 18 点</span>
+          </div>
+
+          <div class="target-list" id="targetList" aria-label="目标能力点数"></div>
+
+          <div class="target-note" id="targetNote">先为想要的能力加点，系统才知道该往哪个方向找。</div>
+
+          <button class="compute-btn" id="computeBtn" type="button">
+            <span class="compute-label">计算最佳组合</span>
+            <span class="compute-sub" id="computeHint">已录入 0 / 6 个部位</span>
+            <svg class="compute-arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+          </button>
+          <p class="inline-error" id="targetError" hidden></p>
+
+          <details class="method">
+            <summary>如何判定“最接近”？</summary>
+            <p>系统从每个部位挑选一件装备，固定得到 18 条能力。先最大化命中点数，也就是让实际点数尽量覆盖目标；偏差值等于各项能力的实际点数与目标点数之差绝对值之和。命中数相同时，优先把多余点数留在你选择过的技能上。如果目标无法满足，系统会先检查“五件齐备、只差一件整装”的情况并列出缺少的装备；若最优六件组合只差一条词条，也会给出替换建议。</p>
+          </details>
+        </aside>
+
+        <section class="panel inventory-panel" aria-labelledby="inventoryHeading">
+          <div class="inventory-head">
+            <div>
+              <span class="section-kicker">装备库</span>
+              <h2 id="inventoryHeading">你拥有哪些装备？</h2>
+              <p class="panel-description">每个部位录入所有候选装备。每件装备填写 3 个互不相同的能力，重复词条装备会被排除在计算之外。</p>
+            </div>
+            <div class="inventory-meta">
+              <span class="count-pill" id="itemCount">0 件装备</span>
+              <span class="count-pill count-pill-muted" id="readyPill">0 / 6 部位</span>
+            </div>
+          </div>
+
+          <div class="slot-grid" id="slotGrid"></div>
+        </section>
+      </div>
+
+      <section class="results-section" id="resultsSection" aria-labelledby="resultsHeading" hidden>
+        <div class="panel result-panel" id="resultPanel">
+          <div class="result-topline">
+            <div class="result-heading">
+              <span class="section-kicker">最佳匹配</span>
+              <h2 id="resultsHeading">你的配装结果</h2>
+            </div>
+            <div class="result-actions">
+              <button class="btn btn-ghost" id="copyBtn" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-copy"></use></svg>
+                <span>复制结果</span>
+              </button>
+              <button class="btn btn-ghost" id="backToTargetBtn" type="button">调整目标</button>
+            </div>
+          </div>
+
+          <div class="stale-notice" id="staleNotice" hidden>
+            <span>装备库或目标已更新，当前结果基于旧数据。</span>
+            <button type="button" id="recomputeBtn">重新计算</button>
+          </div>
+
+          <div class="result-hero">
+            <div class="score-ring" id="scoreRing" aria-hidden="true">
+              <div class="score-ring-inner">
+                <strong id="scorePct">0%</strong>
+                <span>目标命中</span>
+              </div>
+            </div>
+            <div class="result-summary">
+              <div class="result-title-line">
+                <h3 id="resultTitle">最接近的一组</h3>
+                <span class="result-badge" id="resultBadge">最优近似</span>
+              </div>
+              <p id="resultDesc"></p>
+              <div class="stat-row">
+                <div class="stat">
+                  <span>命中点数</span>
+                  <strong id="statMatched">0 / 0</strong>
+                </div>
+                <div class="stat">
+                  <span>偏差值</span>
+                  <strong id="statDiff">0</strong>
+                </div>
+                <div class="stat">
+                  <span>组合空间</span>
+                  <strong id="statSpace">0</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <section class="five-panel" id="fivePanel" aria-labelledby="fiveTitle" hidden>
+            <div class="five-head">
+              <div class="five-head-copy">
+                <span class="section-kicker">五件齐备 · 缺一件装备</span>
+                <h3 id="fiveTitle">找到 0 种缺件情况</h3>
+                <p id="fiveDesc">以下每组五件装备都已满足其余目标，只差一件带指定 3 条词条的装备；对应部位暂时没有这种组合。</p>
+              </div>
+              <span class="five-total" id="fiveTotal">0 种</span>
+            </div>
+            <div class="five-list" id="fiveList"></div>
+            <div class="five-foot">
+              <p id="fiveNote"></p>
+              <button class="btn btn-ghost" id="fiveToggleBtn" type="button" hidden>展开全部</button>
+            </div>
+          </section>
+
+          <div class="gap-panel" id="gapPanel" hidden>
+            <div class="gap-icon" id="gapIcon" aria-hidden="true">+1</div>
+            <div class="gap-main">
+              <span class="section-kicker" id="gapKicker">只差一件</span>
+              <h3 id="gapTitle"></h3>
+              <p id="gapDesc"></p>
+              <div class="gap-alt" id="gapAlt"></div>
+            </div>
+            <div class="missing-card" id="missingCard" hidden>
+              <div class="missing-head">
+                <span>缺少的装备</span>
+                <span class="missing-slot" id="missingSlot"></span>
+              </div>
+              <strong id="missingTitle"></strong>
+              <div class="abilities" id="missingAbilities"></div>
+              <p id="missingSub"></p>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <div class="selected-column">
+              <div class="subhead">
+                <h3>入选装备</h3>
+                <span>每个部位一件</span>
+              </div>
+              <div class="result-selection" id="resultSelection"></div>
+            </div>
+
+            <div class="compare-column">
+              <div class="subhead">
+                <h3>点数对照</h3>
+                <span>目标 / 实际</span>
+              </div>
+              <div class="table-wrap">
+                <table class="compare-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">能力</th>
+                      <th scope="col">目标</th>
+                      <th scope="col">实际</th>
+                      <th scope="col">差额</th>
+                    </tr>
+                  </thead>
+                  <tbody id="compareBody"></tbody>
+                </table>
+              </div>
+              <div class="compare-legend">
+                <span><i class="legend-dot legend-hit"></i>命中</span>
+                <span><i class="legend-dot legend-over"></i>超出</span>
+                <span><i class="legend-dot legend-under"></i>不足</span>
+                <span><i class="legend-dot legend-idle"></i>未选择</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-footer">
+            <p id="resultNote"></p>
+            <span class="result-exact" id="resultExact"></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>数据仅保存在本机浏览器，不会上传到服务器。</span>
+      <span id="saveStatus">自动保存已开启</span>
+    </footer>
+  </div>
+
+  <dialog class="item-dialog" id="itemDialog" aria-labelledby="dialogTitle">
+    <form id="itemForm" novalidate>
+      <div class="dialog-head">
+        <div>
+          <span class="section-kicker" id="dialogKicker">添加装备</span>
+          <h2 id="dialogTitle">添加装备</h2>
+        </div>
+        <button class="icon-btn dialog-close" id="dialogCloseBtn" type="button" aria-label="关闭">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <label class="field" for="itemName">
+          <span>装备名称</span>
+          <input class="text-input" id="itemName" name="itemName" type="text" maxlength="40" autocomplete="off" placeholder="例如：赤月之冠">
+        </label>
+
+        <div class="field">
+          <span class="field-label">3 个能力</span>
+          <div class="select-grid">
+            <label class="select-field">
+              <span>能力 1</span>
+              <select class="ability-select" id="abilitySelect0" data-index="0"></select>
+            </label>
+            <label class="select-field">
+              <span>能力 2</span>
+              <select class="ability-select" id="abilitySelect1" data-index="1"></select>
+            </label>
+            <label class="select-field">
+              <span>能力 3</span>
+              <select class="ability-select" id="abilitySelect2" data-index="2"></select>
+            </label>
+          </div>
+        </div>
+
+        <div class="preview-block">
+          <span class="field-label">能力预览</span>
+          <div class="ability-preview" id="abilityPreview">
+            <span class="preview-placeholder">选择 3 个能力后预览</span>
+          </div>
+        </div>
+        <p class="form-hint" id="formHint">一件装备的 3 个能力必须互不相同。</p>
+        <p class="form-error" id="formError" hidden></p>
+      </div>
+      <div class="dialog-foot">
+        <button class="btn btn-ghost" id="dialogCancelBtn" type="button">取消</button>
+        <button class="btn btn-primary" id="dialogSaveBtn" type="submit">保存装备</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span id="toastMessage"></span>
+    <button id="toastAction" type="button" hidden>撤销</button>
+  </div>
+
+  <input id="importInput" type="file" accept=".json,application/json" hidden>
+
+  <script src="engine.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
